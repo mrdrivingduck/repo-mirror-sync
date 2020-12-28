@@ -1,7 +1,10 @@
 package iot.zjt;
 
+import io.vertx.config.ConfigRetriever;
+import io.vertx.config.ConfigRetrieverOptions;
+import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.Vertx;
-import io.vertx.ext.web.client.WebClient;
+import io.vertx.core.json.JsonObject;
 import iot.zjt.platform.PlatformUser;
 import iot.zjt.platform.online.GitHubPlatform;
 import iot.zjt.platform.online.GitLabPlatform;
@@ -18,36 +21,46 @@ public class Main {
 
     public static void main(String[] args) {
         Vertx vertx = Vertx.vertx();
+
         try {
             Logger.init();
+            logger.info("Logger init success.");
         } catch (IOException e) {
+            logger.error(e.getMessage());
             e.printStackTrace();
         }
 
-//        WebClient client = WebClient.create(vertx);
+        ConfigRetrieverOptions options = new ConfigRetrieverOptions().addStore(
+                new ConfigStoreOptions().setType("file").setFormat("properties")
+                        .setConfig(new JsonObject().put("path", "application-dev.properties"))
+        );
+        ConfigRetriever configRetriever = ConfigRetriever.create(vertx, options);
 
-        PlatformUser user = new PlatformUser("mrdrivingduck", "123");
+        configRetriever.getConfig(json -> {
+            logger.info("Successfully load user configurations.");
 
-        GitHubPlatform github = new GitHubPlatform(vertx, user);
-        GitLabPlatform gitlab = new GitLabPlatform(vertx, user);
+            PlatformUser githubUser = new PlatformUser(
+                    json.result().getString("github.username"),
+                    json.result().getString("github.token"));
+            PlatformUser gitlabUser = new PlatformUser(
+                    json.result().getString("gitlab.username"),
+                    json.result().getString("gitlab.token")
+            );
 
-        github.mirrorAllRepoTo(gitlab, true, false)
-                .onComplete(ar -> {
-                    if (ar.succeeded()) {
-                        System.out.println("Mirroring success");
-                    } else {
-                        System.err.println("Mirroring failed");
-                    }
-                });
+            GitHubPlatform github = new GitHubPlatform(vertx, githubUser);
+            GitLabPlatform gitlab = new GitLabPlatform(vertx, gitlabUser);
 
-// Send a GET request
-//        client
-//            .get(8080, "myserver.mycompany.com", "/some-uri")
-//            .send()
-//            .onSuccess(response -> System.out
-//                .println("Received response with status code" + response.statusCode()))
-//            .onFailure(err ->
-//                System.out.println("Something went wrong " + err.getMessage()));
+            github.mirrorAllRepoTo(gitlab, true, false)
+                    .onComplete(ar -> {
+                        if (ar.succeeded()) {
+                            System.out.println("Mirroring success");
+                        } else {
+                            System.err.println("Mirroring failed");
+                        }
+
+                        vertx.close();
+                    });
+        });
 
     }
 }
