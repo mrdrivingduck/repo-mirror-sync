@@ -12,27 +12,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Platform operation of GitLab.
+ * Platform operation of GitHub.
  *
  * @author Mr Dk.
  * @since 2020/12/28
  */
-public class GitLabPlatform extends AbstractOnlinePlatform {
+public class GitHubPlatform extends AbstractOnlinePlatform {
 
-    private final static Logger logger = LogManager.getLogger(GitLabPlatform.class);
+    private final static Logger logger = LogManager.getLogger(GitHubPlatform.class);
 
-    public GitLabPlatform(final Vertx vertx, final PlatformUser user) {
+    public GitHubPlatform(final Vertx vertx, final PlatformUser user) {
         super(vertx, user);
     }
 
-    // curl --header "Authorization: Bearer bc_x3rjszZx1dbguqEvr" -X POST -d 'name=hahaha&visibility=private' "https://gitlab.com/api/v4/projects"
     @Override
     public Future<Void> createRepository(Repository repo) {
         logger.info(getPlatform() + " create repo");
         return Future.succeededFuture();
     }
 
-    // curl --header "Authorization: Bearer bc_x3rjszZx1dbguqEvr" -X DELETE "https://gitlab.com/api/v4/projects/mrdrivingduck%2Fcare-model-manager"
     @Override
     public Future<Void> deleteRepository(Repository repo) {
         logger.info(getPlatform() + " delete repo");
@@ -53,6 +51,6 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
 
     @Override
     public String getPlatform() {
-        return "GitLab";
+        return "GitHub";
     }
 }
