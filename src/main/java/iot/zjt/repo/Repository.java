@@ -4,6 +4,7 @@ public class Repository {
     private String owner;
     private String name;
     private boolean visibilityPrivate;
+    private int id;
 
     public Repository() {}
 
@@ -19,6 +20,10 @@ public class Repository {
         this.visibilityPrivate = visibilityPrivate;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
@@ -29,5 +34,9 @@ public class Repository {
 
     public boolean getVisibilityPrivate() {
         return visibilityPrivate;
+    }
+
+    public int getId() {
+        return id;
     }
 }

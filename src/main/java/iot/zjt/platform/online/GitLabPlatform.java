@@ -1,13 +1,10 @@
 package iot.zjt.platform.online;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.HttpRequest;
-import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import iot.zjt.platform.AbstractOnlinePlatform;
 import iot.zjt.platform.PlatformUser;
@@ -22,7 +19,7 @@ import java.util.List;
  * Platform operation of GitLab.
  *
  * @author Mr Dk.
- * @since 2020/12/29
+ * @since 2020/12/30
  */
 public class GitLabPlatform extends AbstractOnlinePlatform {
 
@@ -42,6 +39,7 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
      */
     @Override
     public Future<Void> createRepository(Repository repo) {
+        logger.info("Trying to create repository on " + getPlatform());
         WebClient client = WebClient.create(getVertx());
 
         MultiMap form = MultiMap.caseInsensitiveMultiMap();
@@ -53,18 +51,20 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
                 .bearerTokenAuthentication(getUser().getToken())
                 .sendForm(form)
                 .onFailure(err -> {
+                    // network failure.
                     logger.error(new StringBuilder()
                             .append(getPlatform())
                             .append(" responses: ")
                             .append(err.getMessage())
                     );
                 })
-                .compose(res -> {
-                    JsonObject body = res.bodyAsJsonObject();
-                    String log = getPlatform() + " responses " + res.statusCode() +
+                .compose(response -> {
+                    // network success, but the result is unknown.
+                    JsonObject body = response.bodyAsJsonObject();
+                    String log = getPlatform() + " responses " + response.statusCode() +
                             " : " + (body != null ? body.toString() : "");
 
-                    if (res.statusCode() == 201) {
+                    if (response.statusCode() == 201) {
                         logger.info(log);
                     } else {
                         logger.error(log);
@@ -74,8 +74,6 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
                     return Future.succeededFuture();
                 });
     }
-
-    // curl --header "Authorization: Bearer bc_x3rjszZx1dbguqEvr" -X DELETE "https://gitlab.com/api/v4/projects/mrdrivingduck%2Fcare-model-manager"
 
     /**
      * To delete a GitLab repository through GitLab API.
@@ -87,6 +85,7 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
      */
     @Override
     public Future<Void> deleteRepository(Repository repo) {
+        logger.info("Trying to delete repository on " + getPlatform());
         WebClient client = WebClient.create(getVertx());
 
         return client
@@ -94,18 +93,20 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
                 .bearerTokenAuthentication(getUser().getToken())
                 .send()
                 .onFailure(err -> {
+                    // network failure.
                     logger.error(new StringBuilder()
                             .append(getPlatform())
                             .append(" responses: ")
                             .append(err.getMessage())
                     );
                 })
-                .compose(res -> {
-                    JsonObject body = res.bodyAsJsonObject();
-                    String log = getPlatform() + " responses " + res.statusCode() +
+                .compose(response -> {
+                    // network success, but the result is unknown.
+                    JsonObject body = response.bodyAsJsonObject();
+                    String log = getPlatform() + " responses " + response.statusCode() +
                             " : " + (body != null ? body.toString() : "");
 
-                    if (res.statusCode() == 202) {
+                    if (response.statusCode() == 202) {
                         logger.info(log);
                     } else {
                         logger.error(log);
@@ -116,18 +117,73 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
                 });
     }
 
+    /**
+     * To get all GitLab repositories of a user through GitLab API.
+     * The end point is "https://gitlab.com/api/v4/users/:user_id/projects"
+     * with GET method. 200 should be returned.
+     *
+     * @param includePrivate Whether or not to get private repositories.
+     * @return The future object containing all repository information.
+     */
     @Override
     public Future<List<Repository>> getRepositories(boolean includePrivate) {
-        logger.info(getPlatform() + " get repo");
+        logger.info("Trying to get repositories from " + getPlatform());
+
         List<Repository> repos = new ArrayList<>();
-        Repository repo = new Repository();
-        repo.setOwner("mrdrivingduck");
-        repo.setName("emotions");
-        repo.setVisibilityPrivate(true);
-        repos.add(repo);
-        return Future.succeededFuture(repos);
+
+        WebClient client = WebClient.create(getVertx());
+        return client
+                .getAbs("https://gitlab.com/api/v4/users/" + getUser().getUsername() + "/projects")
+                .bearerTokenAuthentication(getUser().getToken())
+                .send()
+                .onFailure(err -> {
+                    // network failure.
+                    logger.error(new StringBuilder()
+                            .append(getPlatform())
+                            .append(" responses: ")
+                            .append(err.getMessage())
+                    );
+                })
+                .compose(response -> {
+                    // network success, but the result is unknown.
+                    JsonArray body = response.bodyAsJsonArray();
+                    if (body == null) {
+                        return Future.failedFuture(getPlatform() +
+                                "responses with empty response body.");
+                    }
+
+                    String log = getPlatform() + " responses " + response.statusCode() +
+                            " : " + body.toString();
+
+                    if (response.statusCode() != 200) {
+                        logger.error(log);
+                        return Future.failedFuture(log);
+                    }
+                    
+                    logger.info(log);
+
+                    for (int i = 0; i < body.size(); i++) {
+                        JsonObject gitlabRepo = body.getJsonObject(i);
+                        Repository repo = new Repository();
+                        repo.setId(gitlabRepo.getInteger("id"));
+                        repo.setName(gitlabRepo.getString("name"));
+                        repo.setOwner(gitlabRepo.getJsonObject("owner").getString("username"));
+                        repo.setVisibilityPrivate(gitlabRepo.getString("visibility").equals("private"));
+
+                        if (includePrivate || !repo.getVisibilityPrivate()) {
+                            repos.add(repo);
+                        }
+                    }
+
+                    return Future.succeededFuture(repos);
+                });
     }
 
+    /**
+     * Return the platform name.
+     *
+     * @return The platform name of GitLab.
+     */
     @Override
     public String getPlatform() {
         return "GitLab";
