@@ -61,11 +61,17 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
                 .compose(response -> {
                     // network success, but the result is unknown.
                     JsonObject body = response.bodyAsJsonObject();
-                    String log = getPlatform() + " responses " + response.statusCode() +
-                            " : " + (body != null ? body.toString() : "");
+                    if (body == null) {
+                        return Future.failedFuture(getPlatform() +
+                                "responses with empty response body.");
+                    }
+
+                    String log = getPlatform() + " responses " +
+                            response.statusCode() + " : " + body.toString();
 
                     if (response.statusCode() == 201) {
                         logger.info(log);
+                        repo.setId(body.getInteger("id"));
                     } else {
                         logger.error(log);
                         return Future.failedFuture(log);
