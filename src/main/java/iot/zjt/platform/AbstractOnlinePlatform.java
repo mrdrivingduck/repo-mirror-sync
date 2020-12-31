@@ -14,7 +14,7 @@ import java.util.List;
  * An abstract concept of online SCM platform.
  *
  * @author Mr Dk.
- * @since 2020/12/28
+ * @since 2020/12/31
  */
 public abstract class AbstractOnlinePlatform implements OnlinePlatform {
 
@@ -47,6 +47,9 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
 
     @Override
     public abstract String getPlatform();
+
+    @Override
+    public abstract String getRepositoryHttpsUrl(Repository repo);
 
     @SuppressWarnings("rawtypes")
     public Future<?> mirrorAllRepoTo(AbstractOnlinePlatform targetPlatform,

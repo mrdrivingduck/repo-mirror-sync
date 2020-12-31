@@ -19,7 +19,7 @@ import java.util.List;
  * Platform operation of GitLab.
  *
  * @author Mr Dk.
- * @since 2020/12/30
+ * @since 2020/12/31
  */
 public class GitLabPlatform extends AbstractOnlinePlatform {
 
@@ -193,5 +193,15 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
     @Override
     public String getPlatform() {
         return "GitLab";
+    }
+
+    /**
+     *
+     * @param repo The repository on the platform.
+     * @return The HTTPS URL of the repository on this platform.
+     */
+    @Override
+    public String getRepositoryHttpsUrl(Repository repo) {
+        return "https://gitlab.com/" + repo.getOwner() + "/" + repo.getName() + ".git";
     }
 }

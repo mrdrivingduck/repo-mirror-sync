@@ -9,11 +9,12 @@ import java.util.List;
  * Interface for online SCM system to implement.
  *
  * @author Mr Dk.
- * @since 2020/12/28
+ * @since 2020/12/31
  */
 public interface OnlinePlatform {
     Future<List<Repository>> getRepositories(boolean includePrivate);
     Future<Void> createRepository(Repository repo);
     Future<Void> deleteRepository(Repository repo);
     String getPlatform();
+    String getRepositoryHttpsUrl(Repository repo);
 }

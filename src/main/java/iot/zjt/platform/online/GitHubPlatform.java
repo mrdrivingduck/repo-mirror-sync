@@ -20,7 +20,7 @@ import java.util.List;
  * Platform operation of GitHub.
  *
  * @author Mr Dk.
- * @since 2020/12/30
+ * @since 2020/12/31
  */
 public class GitHubPlatform extends AbstractOnlinePlatform {
 
@@ -212,8 +212,23 @@ public class GitHubPlatform extends AbstractOnlinePlatform {
         }).compose(compositeFuture -> Future.succeededFuture(repos));
     }
 
+    /**
+     * Return the platform name.
+     *
+     * @return The platform name of GitHub.
+     */
     @Override
     public String getPlatform() {
         return "GitHub";
+    }
+
+    /**
+     *
+     * @param repo The repository on the platform.
+     * @return The HTTPS URL of the repository on this platform.
+     */
+    @Override
+    public String getRepositoryHttpsUrl(Repository repo) {
+        return "https://github.com/" + repo.getOwner() + "/" + repo.getName() + ".git";
     }
 }
