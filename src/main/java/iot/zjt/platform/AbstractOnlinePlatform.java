@@ -69,13 +69,13 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
             List<Future> createRepoFutures = new ArrayList<>();
             Map<Repository, Repository> repoMapper = new HashMap<>();
 
-            noNeedToCreate:
+            needToCreate:
             for (Repository from : fromReposFuture.result()) {
                 for (Repository existRepo : toReposFuture.result()) {
                     if (existRepo.getName().equals(from.getName())) {
                         // found matched repo with names
                         repoMapper.put(from, existRepo);
-                        continue noNeedToCreate;
+                        continue needToCreate;
                     }
                 }
 
@@ -112,7 +112,8 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
                     return vertx.executeBlocking(promise -> {
                         File dir = new File(dirStr);
                         try {
-                            logger.info("Cloning from: ");
+                            logger.info("Cloning from: " + from.getName() +
+                                    " on " + getPlatform());
                             Git.cloneRepository()
                                     .setCredentialsProvider(
                                             new UsernamePasswordCredentialsProvider(
@@ -124,7 +125,8 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
                                     .setDirectory(dir)
                                     .call();
 
-                            logger.info("Pushing mirror to: ");
+                            logger.info("Pushing mirror to: " + to.getName() +
+                                    " on " + targetPlatform.getPlatform());
                             Git.open(dir).push()
                                     .setCredentialsProvider(
                                             new UsernamePasswordCredentialsProvider(
@@ -150,8 +152,6 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
             }
 
             return CompositeFuture.all(mirrorRepoFutures);
-        }).onFailure(throwable -> {
-            logger.error(throwable.getMessage());
         });
     }
 }
