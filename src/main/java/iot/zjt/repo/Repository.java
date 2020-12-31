@@ -1,5 +1,11 @@
 package iot.zjt.repo;
 
+/**
+ * The object to describe an online repository.
+ *
+ * @author Mr Dk.
+ * @version 2020/12/31
+ */
 public class Repository {
     private String owner;
     private String name;
@@ -7,6 +13,13 @@ public class Repository {
     private int id;
 
     public Repository() {}
+
+    public Repository(Repository another) {
+        this.owner = another.owner;
+        this.name = another.name;
+        this.visibilityPrivate = another.visibilityPrivate;
+        this.id = another.id;
+    }
 
     public void setName(String name) {
         this.name = name;

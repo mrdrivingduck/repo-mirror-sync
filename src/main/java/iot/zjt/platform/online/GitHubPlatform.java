@@ -50,7 +50,7 @@ public class GitHubPlatform extends AbstractOnlinePlatform {
      */
     @Override
     public Future<Void> createRepository(Repository repo) {
-        logger.info("Trying to create repository on " + getPlatform());
+        logger.info("Trying to create repository " + repo.getName() + " on " + getPlatform());
         WebClient client = WebClient.create(getVertx());
 
         MultiMap form = MultiMap.caseInsensitiveMultiMap();
@@ -60,6 +60,7 @@ public class GitHubPlatform extends AbstractOnlinePlatform {
         return client
                 .postAbs("https://api.github.com/user/repos")
                 .bearerTokenAuthentication(getUser().getToken())
+                .putHeader("accept", "application/vnd.github.v3+json")
                 .sendJsonObject(new JsonObject()
                         .put("name", repo.getName())
                         .put("private", repo.getVisibilityPrivate())
@@ -80,8 +81,7 @@ public class GitHubPlatform extends AbstractOnlinePlatform {
                                 "responses with empty response body.");
                     }
 
-                    String log = getPlatform() + " responses " +
-                            response.statusCode() + " : " + body.toString();
+                    String log = getPlatform() + " responses " + response.statusCode();
 
                     if (response.statusCode() == 201) {
                         logger.info(log);
@@ -91,6 +91,7 @@ public class GitHubPlatform extends AbstractOnlinePlatform {
                         return Future.failedFuture(log);
                     }
 
+                    logger.info("Successfully create " + repo.getName() + " on " + getPlatform());
                     return Future.succeededFuture();
                 });
     }
@@ -112,6 +113,7 @@ public class GitHubPlatform extends AbstractOnlinePlatform {
         return client
                 .deleteAbs("https://api.github.com/repos/" + repo.getOwner() + "/" + repo.getName())
                 .bearerTokenAuthentication(getUser().getToken())
+                .putHeader("accept", "application/vnd.github.v3+json")
                 .send()
                 .onFailure(err -> {
                     // network failure.
@@ -179,8 +181,7 @@ public class GitHubPlatform extends AbstractOnlinePlatform {
                                     "responses with empty response body.");
                         }
 
-                        String log = getPlatform() + " responses " + response.statusCode() +
-                                " : " + body.toString();
+                        String log = getPlatform() + " responses " + response.statusCode();
 
                         if (response.statusCode() != 200) {
                             logger.error(log);
