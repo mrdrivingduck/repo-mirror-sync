@@ -47,8 +47,44 @@ public class Main {
                     json.result().getString("gitlab.token")
             );
 
-            GitHubPlatform github = new GitHubPlatform(vertx, githubUser);
+            GitHubPlatform github = new GitHubPlatform(vertx, githubUser, 100);
             GitLabPlatform gitlab = new GitLabPlatform(vertx, gitlabUser);
+
+//            Repository repo = new Repository();
+//            repo.setVisibilityPrivate(true);
+//            repo.setOwner(gitlabUser.getUsername());
+//            repo.setName("test");
+//
+//            gitlab.createRepository(repo).onComplete(ar -> {
+//                if (ar.succeeded()) {
+//                    logger.info("objk");
+//                } else {
+//                    logger.error("end");
+//                }
+//                vertx.close();
+//            });
+
+//            gitlab.deleteRepository(repo).onComplete(ar -> {
+//                if (ar.succeeded()) {
+//                    logger.info("objk");
+//                } else {
+//                    logger.error("end");
+//                }
+//                vertx.close();
+//            });
+
+//            gitlab.getRepositories(true).onComplete(ar -> {
+//                if (ar.succeeded()) {
+//                    for (Repository onlineRepo : ar.result()) {
+//                        logger.info(onlineRepo.getName());
+//                    }
+//                    logger.info(ar.result().size());
+//                } else {
+//                    logger.error(ar.cause().getMessage());
+//                }
+//
+//                vertx.close();
+//            });
 
             github.mirrorAllRepoTo(gitlab, true, false)
                     .onComplete(ar -> {

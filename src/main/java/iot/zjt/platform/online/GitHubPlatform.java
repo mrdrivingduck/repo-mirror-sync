@@ -229,6 +229,7 @@ public class GitHubPlatform extends AbstractOnlinePlatform {
     }
 
     /**
+     * Return the HTTPS URL for Git remote operation.
      *
      * @param repo The repository on the platform.
      * @return The HTTPS URL of the repository on this platform.

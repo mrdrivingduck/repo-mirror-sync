@@ -22,7 +22,7 @@ import java.util.Map;
  * An abstract concept of online SCM platform.
  *
  * @author Mr Dk.
- * @since 2020/12/31
+ * @since 2021/01/01
  */
 public abstract class AbstractOnlinePlatform implements OnlinePlatform {
 
@@ -84,35 +84,30 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
                 Repository newRepo = new Repository(from);
                 createRepoFutures.add(targetPlatform.createRepository(newRepo));
                 repoMapper.put(from, newRepo);
-                break;
             }
 
             return CompositeFuture
                     .all(createRepoFutures)
                     .compose(createComplete -> Future.succeededFuture(repoMapper));
-
-//            return CompositeFuture.all(createRepoFutures).compose(temp -> {
-//                return Future.failedFuture("ok");
-//            });
         }).compose(repoMapper -> {
-            // mirror repo list
-            List<Future> mirrorRepoFutures = new ArrayList<>();
+            // start to mirror the repository list
             FileSystem fs = vertx.fileSystem();
+            // List<Future> mirrorRepoFutures = new ArrayList<>();
+            Future<?> mirrorRepoFuture = Future.succeededFuture(); // one by one
 
             for (Map.Entry<Repository, Repository> entry : repoMapper.entrySet()) {
                 Repository from = entry.getKey();
                 Repository to = entry.getValue();
 
-                logger.info("Start to mirror " + from.getName() + " from " +
-                        getPlatform() + " to " + targetPlatform.getPlatform());
-
-                Future<?> future = fs.createTempDirectory("").compose(dirStr -> {
-                    logger.warn(dirStr);
+                mirrorRepoFuture.compose(v -> fs.createTempDirectory("")).compose(dirStr -> {
+                    logger.warn("Start to mirror " + from.getName() + " from " +
+                            getPlatform() + " to " + targetPlatform.getPlatform() +
+                            " at " + dirStr);
 
                     return vertx.executeBlocking(promise -> {
                         File dir = new File(dirStr);
                         try {
-                            logger.info("Cloning from: " + from.getName() +
+                            logger.warn("Cloning from: " + from.getName() +
                                     " on " + getPlatform());
                             Git.cloneRepository()
                                     .setCredentialsProvider(
@@ -124,8 +119,9 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
                                     .setBare(true)
                                     .setDirectory(dir)
                                     .call();
+                            logger.info("Clone success");
 
-                            logger.info("Pushing mirror to: " + to.getName() +
+                            logger.warn("Pushing mirror to: " + to.getName() +
                                     " on " + targetPlatform.getPlatform());
                             Git.open(dir).push()
                                     .setCredentialsProvider(
@@ -137,21 +133,22 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
                                     .setForce(true)
                                     .add("refs/*:refs/*")
                                     .call();
+                            logger.info("Push success");
 
                         } catch (GitAPIException | IOException e) {
                             logger.error(e.getMessage());
                             promise.fail(e.getMessage());
                         }
-                        logger.info("Complete.");
+                        logger.info("Mirroring " + from.getName() + " complete.");
                         promise.complete();
                     });
                 });
 
-                mirrorRepoFutures.add(future);
-                break; // only for debug
+                // mirrorRepoFutures.add(future);
+                // break; // only for debug
             }
 
-            return CompositeFuture.all(mirrorRepoFutures);
+            return mirrorRepoFuture;
         });
     }
 }

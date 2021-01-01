@@ -220,12 +220,15 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
     }
 
     /**
+     * Return the HTTPS URL for Git remote operation.
      *
      * @param repo The repository on the platform.
      * @return The HTTPS URL of the repository on this platform.
      */
     @Override
     public String getRepositoryHttpsUrl(Repository repo) {
-        return "https://gitlab.com/" + repo.getOwner() + "/" + repo.getName() + ".git";
+        return "https://gitlab.com/" + repo.getOwner() + "/" +
+                repo.getName().replace('.', '-') +
+                ".git";
     }
 }
