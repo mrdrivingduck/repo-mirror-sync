@@ -20,7 +20,7 @@ import java.util.List;
  * Platform operation of GitLab.
  *
  * @author Mr Dk.
- * @since 2020/12/31
+ * @since 2021/01/01
  */
 public class GitLabPlatform extends AbstractOnlinePlatform {
 
@@ -47,7 +47,7 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
      */
     @Override
     public Future<Void> createRepository(Repository repo) {
-        logger.info("Trying to create repository " + repo.getName() + " on " + getPlatform());
+        logger.warn("Trying to create repository " + repo.getName() + " on " + getPlatform());
         WebClient client = WebClient.create(getVertx());
 
         MultiMap form = MultiMap.caseInsensitiveMultiMap();
@@ -99,7 +99,7 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
      */
     @Override
     public Future<Void> deleteRepository(Repository repo) {
-        logger.info("Trying to delete repository on " + getPlatform());
+        logger.warn("Trying to delete repository on " + getPlatform());
         WebClient client = WebClient.create(getVertx());
 
         return client
@@ -127,6 +127,7 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
                         return Future.failedFuture(log);
                     }
 
+                    logger.info("Successfully delete " + repo.getName() + " on " + getPlatform());
                     return Future.succeededFuture();
                 });
     }
@@ -142,14 +143,14 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
     @Override
     @SuppressWarnings("rawtypes")
     public Future<List<Repository>> getRepositories(boolean includePrivate) {
-        logger.info("Trying to get repositories from " + getPlatform());
+        logger.warn("Trying to get repositories from " + getPlatform());
 
         List<Repository> repos = new ArrayList<>();
         List<Future> futures = new ArrayList<>();
         WebClient client = WebClient.create(getVertx());
 
         for (int page = 1; page <= Math.ceil(this.approximateRepoCount / 20d); page++) {
-            logger.info("Fetch the " + page + " page from " + getPlatform());
+            logger.warn("Fetching the " + page + "(-th) page from " + getPlatform());
             Future<Void> future = client
                     .getAbs("https://gitlab.com/api/v4/users/" + getUser().getUsername() + "/projects")
                     .bearerTokenAuthentication(getUser().getToken())
@@ -202,7 +203,10 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
 
         return CompositeFuture.all(futures).onFailure(err -> {
             logger.error(err.getMessage());
-        }).compose(compositeFuture -> Future.succeededFuture(repos));
+        }).compose(compositeFuture -> {
+            logger.info("Successfully get all repositories from " + getPlatform());
+            return Future.succeededFuture(repos);
+        });
     }
 
     /**
