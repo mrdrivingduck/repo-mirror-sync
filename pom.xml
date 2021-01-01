@@ -6,7 +6,7 @@
 
   <groupId>iot.zjt</groupId>
   <artifactId>repo-mirror-sync</artifactId>
-  <version>0.0.1</version>
+  <version>0.1.0</version>
 
   <name>repo-mirror-sync</name>
   <!-- FIXME change it to the project's website -->

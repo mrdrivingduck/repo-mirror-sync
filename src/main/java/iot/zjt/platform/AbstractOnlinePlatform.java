@@ -73,13 +73,14 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
             for (Repository from : fromReposFuture.result()) {
                 for (Repository existRepo : toReposFuture.result()) {
                     if (existRepo.getName().equals(from.getName())) {
-                        // found matched repo with names
+                        // found matched repo with names.
                         repoMapper.put(from, existRepo);
                         continue needToCreate;
+                        // no need to create repo.
                     }
                 }
 
-                // create a new repository
+                // create a new repository.
                 // the id of new repository shall be overwrite lately.
                 Repository newRepo = new Repository(from);
                 createRepoFutures.add(targetPlatform.createRepository(newRepo));
@@ -90,62 +91,58 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
                     .all(createRepoFutures)
                     .compose(createComplete -> Future.succeededFuture(repoMapper));
         }).compose(repoMapper -> {
-            // start to mirror the repository list
+            // start to mirror the repository list.
             FileSystem fs = vertx.fileSystem();
-            // List<Future> mirrorRepoFutures = new ArrayList<>();
-            Future<?> mirrorRepoFuture = Future.succeededFuture(); // one by one
+            Future<?> mirrorRepoFuture = Future.succeededFuture(); // one by one.
 
             for (Map.Entry<Repository, Repository> entry : repoMapper.entrySet()) {
                 Repository from = entry.getKey();
                 Repository to = entry.getValue();
 
-                mirrorRepoFuture.compose(v -> fs.createTempDirectory("")).compose(dirStr -> {
-                    logger.warn("Start to mirror " + from.getName() + " from " +
-                            getPlatform() + " to " + targetPlatform.getPlatform() +
-                            " at " + dirStr);
+                mirrorRepoFuture
+                        .compose(v -> fs.createTempDirectory(""))
+                        .compose(dirStr -> vertx.executeBlocking(promise -> {
+                                logger.warn("Start to mirror [" + from.getName() + "] from {" +
+                                        getPlatform() + "} to {" + targetPlatform.getPlatform() +
+                                        "} at " + dirStr);
 
-                    return vertx.executeBlocking(promise -> {
-                        File dir = new File(dirStr);
-                        try {
-                            logger.warn("Cloning from: " + from.getName() +
-                                    " on " + getPlatform());
-                            Git.cloneRepository()
-                                    .setCredentialsProvider(
-                                            new UsernamePasswordCredentialsProvider(
-                                                    getUser().getUsername(),
-                                                    getUser().getToken()
-                                            ))
-                                    .setURI(getRepositoryHttpsUrl(from))
-                                    .setBare(true)
-                                    .setDirectory(dir)
-                                    .call();
-                            logger.info("Clone success");
+                                File dir = new File(dirStr);
+                                try {
+                                    logger.warn("Cloning from: [" + from.getName() +
+                                            "] on " + getPlatform());
+                                    Git.cloneRepository()
+                                            .setCredentialsProvider(
+                                                    new UsernamePasswordCredentialsProvider(
+                                                            getUser().getUsername(),
+                                                            getUser().getToken()
+                                                    ))
+                                            .setURI(getRepositoryHttpsUrl(from))
+                                            .setBare(true)
+                                            .setDirectory(dir)
+                                            .call();
+                                    logger.info("Clone [" + from.getName() + "] success");
 
-                            logger.warn("Pushing mirror to: " + to.getName() +
-                                    " on " + targetPlatform.getPlatform());
-                            Git.open(dir).push()
-                                    .setCredentialsProvider(
-                                            new UsernamePasswordCredentialsProvider(
-                                                    targetPlatform.getUser().getUsername(),
-                                                    targetPlatform.getUser().getToken()
-                                            ))
-                                    .setRemote(targetPlatform.getRepositoryHttpsUrl(to))
-                                    .setForce(true)
-                                    .add("refs/*:refs/*")
-                                    .call();
-                            logger.info("Push success");
+                                    logger.warn("Pushing mirror to: [" + to.getName() +
+                                            "] on " + targetPlatform.getPlatform());
+                                    Git.open(dir).push()
+                                            .setCredentialsProvider(
+                                                    new UsernamePasswordCredentialsProvider(
+                                                            targetPlatform.getUser().getUsername(),
+                                                            targetPlatform.getUser().getToken()
+                                                    ))
+                                            .setRemote(targetPlatform.getRepositoryHttpsUrl(to))
+                                            .setForce(true)
+                                            .add("refs/*:refs/*")
+                                            .call();
+                                    logger.info("Push [" + to.getName() + "] success");
 
-                        } catch (GitAPIException | IOException e) {
-                            logger.error(e.getMessage());
-                            promise.fail(e.getMessage());
-                        }
-                        logger.info("Mirroring " + from.getName() + " complete.");
-                        promise.complete();
-                    });
-                });
-
-                // mirrorRepoFutures.add(future);
-                // break; // only for debug
+                                } catch (GitAPIException | IOException e) {
+                                    logger.error(e.getMessage());
+                                    promise.fail(e.getMessage());
+                                }
+                                logger.info("Mirroring [" + from.getName() + "] complete.");
+                                promise.complete();
+                            }));
             }
 
             return mirrorRepoFuture;
