@@ -22,7 +22,7 @@ import java.util.Map;
  * An abstract concept of online SCM platform.
  *
  * @author Mr Dk.
- * @since 2021/01/01
+ * @since 2021/01/02
  */
 public abstract class AbstractOnlinePlatform implements OnlinePlatform {
 
@@ -65,10 +65,21 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
     @SuppressWarnings("rawtypes")
     public Future<?> mirrorAllRepoTo(AbstractOnlinePlatform targetPlatform,
                                      boolean includePrivate, boolean removeNonExist) {
+        /*
+         * Step 1:
+         * Fetch repositories from platforms.
+         */
+        logger.warn("Step 1: fetching repositories from {" + getPlatform() +
+                "} and {" + targetPlatform.getPlatform() + "} ...");
         Future<List<Repository>> fromReposFuture = this.getRepositories(includePrivate);
         Future<List<Repository>> toReposFuture = targetPlatform.getRepositories(true);
 
         return CompositeFuture.all(fromReposFuture, toReposFuture).compose(v -> {
+            /*
+             * Step 2:
+             * Create empty repositories if necessary.
+             */
+            logger.warn("Step 2: Creating repositories on {" + targetPlatform.getPlatform() + "} ...");
             List<Future> createRepoFutures = new ArrayList<>();
             Map<Repository, Repository> repoMapper = new HashMap<>();
 
@@ -94,7 +105,32 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
                     .all(createRepoFutures)
                     .compose(createComplete -> Future.succeededFuture(repoMapper));
         }).compose(repoMapper -> {
-            // start to mirror the repository list.
+            /*
+             * Step 3:
+             * Update repository visibility if necessary.
+             */
+            logger.warn("Step 3: updating repository visibility ...");
+            List<Future> updateFutures = new ArrayList<>();
+
+            for (Map.Entry<Repository, Repository> entry : repoMapper.entrySet()) {
+                Repository from = entry.getKey();
+                Repository to = entry.getValue();
+
+                if (from.getVisibilityPrivate() != to.getVisibilityPrivate()) {
+                    to.setVisibilityPrivate(from.getVisibilityPrivate());
+                    updateFutures.add(targetPlatform.updateRepository(to));
+                }
+            }
+
+            return CompositeFuture.all(updateFutures)
+                    .compose(updateComplete -> Future.succeededFuture(repoMapper));
+        }).compose(repoMapper -> {
+            /*
+             * Step 4:
+             * Start to mirror the repository list.
+             */
+            logger.warn("Step 4: Start mirroring repositories ...");
+
             FileSystem fs = vertx.fileSystem();
             Future<?> mirrorRepoFuture = Future.succeededFuture(); // one by one.
 
@@ -103,7 +139,7 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
                 Repository to = entry.getValue();
 
                 mirrorRepoFuture
-                        .compose(v -> fs.createTempDirectory(""))
+                        .compose(v -> fs.createTempDirectory("")) // no need to remove by hand.
                         .compose(dirStr -> vertx.executeBlocking(promise -> {
                                 logger.warn("Start to mirror [" + from.getName() + "] from {" +
                                         getPlatform() + "} to {" + targetPlatform.getPlatform() +

@@ -8,6 +8,7 @@ import io.vertx.core.json.JsonObject;
 import iot.zjt.platform.PlatformUser;
 import iot.zjt.platform.online.GitHubPlatform;
 import iot.zjt.platform.online.GitLabPlatform;
+import iot.zjt.repo.Repository;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
@@ -51,9 +52,20 @@ public class Main {
             GitLabPlatform gitlab = new GitLabPlatform(vertx, gitlabUser);
 
 //            Repository repo = new Repository();
-//            repo.setVisibilityPrivate(true);
+//            repo.setVisibilityPrivate(false);
 //            repo.setOwner(gitlabUser.getUsername());
-//            repo.setName("test");
+//            repo.setName("repo-mirror-sync");
+//
+//            gitlab.updateRepository(repo).onComplete(ar -> {
+//                if (ar.succeeded()) {
+//                    logger.info("ojbk");
+//                } else {
+//                    logger.error("fail to update");
+//                }
+//
+//                vertx.close();
+//            });
+
 //
 //            gitlab.createRepository(repo).onComplete(ar -> {
 //                if (ar.succeeded()) {
@@ -86,16 +98,15 @@ public class Main {
 //                vertx.close();
 //            });
 
-            github.mirrorAllRepoTo(gitlab, true, false)
-                    .onComplete(ar -> {
-                        if (ar.succeeded()) {
-                            System.out.println("Mirroring success");
-                        } else {
-                            System.err.println("Mirroring failed");
-                        }
+            github.mirrorAllRepoTo(gitlab, true, false).onComplete(ar -> {
+                if (ar.succeeded()) {
+                    System.out.println("Mirroring success");
+                } else {
+                    System.err.println("Mirroring failed");
+                }
 
-                        vertx.close();
-                    });
+                vertx.close();
+            });
         });
 
     }

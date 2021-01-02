@@ -20,7 +20,7 @@ import java.util.List;
  * Platform operation of GitLab.
  *
  * @author Mr Dk.
- * @since 2021/01/01
+ * @since 2021/01/02
  */
 public class GitLabPlatform extends AbstractOnlinePlatform {
 
@@ -219,14 +219,13 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
                         }
 
                         String log = getPlatform() + " responses " + response.statusCode();
-                        logger.info(body.toString());
 
                         if (response.statusCode() != 200) {
                             logger.error(log);
                             return Future.failedFuture(log);
                         }
 
-                        logger.info(log);
+                        // logger.info(log);
 
                         for (int i = 0; i < body.size(); i++) {
                             JsonObject gitlabRepo = body.getJsonObject(i);
@@ -246,12 +245,12 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
             futures.add(future);
         }
 
-        return CompositeFuture.all(futures).onFailure(err -> {
-            logger.error(err.getMessage());
-        }).compose(compositeFuture -> {
-            logger.info("Successfully get all repositories from " + getPlatform());
-            return Future.succeededFuture(repos);
-        });
+        return CompositeFuture.all(futures)
+                .onFailure(err -> logger.error(err.getMessage()))
+                .compose(compositeFuture -> {
+                    logger.info("Successfully get all repositories from " + getPlatform());
+                    return Future.succeededFuture(repos);
+                });
     }
 
     /**

@@ -2,7 +2,6 @@ package iot.zjt.platform.online;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
-import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -20,7 +19,7 @@ import java.util.List;
  * Platform operation of GitHub.
  *
  * @author Mr Dk.
- * @since 2021/01/01
+ * @since 2021/01/02
  */
 public class GitHubPlatform extends AbstractOnlinePlatform {
 
@@ -228,7 +227,7 @@ public class GitHubPlatform extends AbstractOnlinePlatform {
                             return Future.failedFuture(log);
                         }
 
-                        logger.info(log);
+                        // logger.info(log);
 
                         for (int i = 0; i < body.size(); i++) {
                             JsonObject githubRepo = body.getJsonObject(i);
@@ -248,12 +247,12 @@ public class GitHubPlatform extends AbstractOnlinePlatform {
             futures.add(future);
         }
 
-        return CompositeFuture.all(futures).onFailure(err -> {
-            logger.error(err.getMessage());
-        }).compose(compositeFuture -> {
-            logger.info("Successfully get all repositories from " + getPlatform());
-            return Future.succeededFuture(repos);
-        });
+        return CompositeFuture.all(futures)
+                .onFailure(err -> logger.error(err.getMessage()))
+                .compose(compositeFuture -> {
+                    logger.info("Successfully get all repositories from " + getPlatform());
+                    return Future.succeededFuture(repos);
+                });
     }
 
     /**
