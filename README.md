@@ -27,11 +27,11 @@ More hosting platforms to be support:
 
 | Support Status |                        Platform Logo                         |                           Tokens                            |
 | :------------: | :----------------------------------------------------------: | :---------------------------------------------------------: |
-|       ✅        | <img src="https://image.flaticon.com/icons/png/512/25/25231.png" alt="github" style="width:65px;" /> [GitHub](https://github.com/) |         [link](https://github.com/settings/tokens)          |
-|       ✅        | <img src="https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png" alt="gitlab" style="width:100px;" /> [GitLab](https://gitlab.com/) | [link](https://gitlab.com/-/profile/personal_access_tokens) |
-|       ❌        | ![bitbucket](https://images.ctfassets.net/8j5aqoy0ts8s/PwyDgzgMHcL14w44zWxex/6d67cbcb2d40c782d6fa13ee97b159bc/logo-gradient-blue-bitbucket) [Bitbucket](https://bitbucket.org/) |                              🚧                              |
-|       ❌        | <img src="https://gitee.com/static/images/logo-en.svg" alt="gitee" style="width: 60px;" /> [Gitee](https://gitee.com/) |                              🚧                              |
-|       ❌        | <img src="https://coding-net-production-pp-ci.codehub.cn/6636348c-4d30-40ff-8620-2dbdc1106ff7.png" alt="coding" style="width: 100px;" /> [Coding](https://coding.net/) |                              🚧                              |
+|       ✅        |   ![github](docs/github.png) [GitHub](https://github.com/)   |         [link](https://github.com/settings/tokens)          |
+|       ✅        |   ![gitlab](docs/gitlab.png) [GitLab](https://gitlab.com/)   | [link](https://gitlab.com/-/profile/personal_access_tokens) |
+|       ❌        | ![bitbucket](docs/bitbucket.png) [Bitbucket](https://bitbucket.org/) |                              🚧                              |
+|       ❌        |     ![gitee](docs/gitee.png) [Gitee](https://gitee.com/)     |                              🚧                              |
+|       ❌        |   ![coding](docs/coding.png) [Coding](https://coding.net/)   |                              🚧                              |
 |      ...       |                             ...                              |                             ...                             |
 
 To support a platform, methods defined in [`OnlinePlatform`](src/main/java/iot/zjt/platform/OnlinePlatform.java) interface should be implemented: 
