@@ -12,11 +12,11 @@ Nanjing, Jiangsu, China
 
 ## About
 
-*Repository Mirror Synchronizer* help you backup repositories from one hosting platform to another as a mirror, keeping your commit records, branches, tags **all the same**. Currently most of the hosting platforms has offered such function **with charge**. This program tries to to the same thing with the help of **APIs provided by the platforms** and the mirroring ability provided by **Git**.
+*Repository Mirror Synchronizer* helps you backup repositories from one hosting platform to another as a mirror, keeping your commit records, branches, tags **all the same**. Currently most of the hosting platforms have offered similar function **with charge**. This program tries to to the same thing with the help of **APIs provided by the platforms** and the mirroring ability provided by **Git**.
 
-To manipulate your repositories through APIs, you should get the **personal access tokens** from the corresponding platform. Specifically, the token should at least have the permission of **read / write repositories**.
+To manipulate your repositories through APIs, you should get the **personal access tokens** from the corresponding platform. Specifically, the tokens should at least have the permission of **read / write repositories**.
 
-The program use these library as main dependencies:
+The program uses these libraries as main dependencies:
 
 * [*Eclipse Vert.x*](https://vertx.io/): Reactive applications on the JVM
 * [*Eclipse JGit*](https://www.eclipse.org/jgit/)
@@ -34,7 +34,7 @@ More hosting platforms to be support:
 |       ❌        |   ![coding](docs/coding.png) [Coding](https://coding.net/)   |                              🚧                              |
 |      ...       |                             ...                              |                             ...                             |
 
-To support a platform, methods defined in [`OnlinePlatform`](src/main/java/iot/zjt/platform/OnlinePlatform.java) interface should be implemented: 
+To support a new platform, methods defined in [`OnlinePlatform`](src/main/java/iot/zjt/platform/OnlinePlatform.java) interface should be implemented: 
 
 ```java
 public interface OnlinePlatform {
