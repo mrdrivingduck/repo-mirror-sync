@@ -97,7 +97,7 @@ public class Main {
 //                vertx.close();
 //            });
 
-            github.mirrorAllRepoTo(gitlab, true, false).onComplete(ar -> {
+            github.mirrorAllRepoTo(gitlab, true).onComplete(ar -> {
                 if (ar.succeeded()) {
                     System.out.println("Mirroring success");
                 } else {

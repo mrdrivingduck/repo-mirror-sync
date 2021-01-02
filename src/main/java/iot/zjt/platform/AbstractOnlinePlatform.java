@@ -63,8 +63,7 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
     public abstract String getRepositoryHttpsUrl(Repository repo);
 
     @SuppressWarnings("rawtypes")
-    public Future<?> mirrorAllRepoTo(AbstractOnlinePlatform targetPlatform,
-                                     boolean includePrivate, boolean removeNonExist) {
+    public Future<?> mirrorAllRepoTo(AbstractOnlinePlatform targetPlatform, boolean includePrivate) {
         /*
          * Step 1:
          * Fetch repositories from platforms.
