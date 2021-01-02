@@ -47,7 +47,7 @@ public class Main {
                     json.result().getString("gitlab.token")
             );
 
-            GitHubPlatform github = new GitHubPlatform(vertx, githubUser, 100);
+            GitHubPlatform github = new GitHubPlatform(vertx, githubUser);
             GitLabPlatform gitlab = new GitLabPlatform(vertx, gitlabUser);
 
 //            Repository repo = new Repository();

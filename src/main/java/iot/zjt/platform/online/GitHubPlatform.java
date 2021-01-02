@@ -39,6 +39,10 @@ public class GitHubPlatform extends AbstractOnlinePlatform {
         this.approximateRepoCount = approximateRepoCount;
     }
 
+    public GitHubPlatform(final Vertx vertx, final PlatformUser user) {
+        this(vertx, user, 100);
+    }
+
     /**
      * To create a GitHub repository through GitHub API v3.
      * The end point is "https://api.github.com/user/repos" with POST method,
