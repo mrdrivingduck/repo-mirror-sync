@@ -51,6 +51,9 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
     public abstract Future<Void> deleteRepository(Repository repo);
 
     @Override
+    public abstract Future<Void> updateRepository(Repository repo);
+
+    @Override
     public abstract Future<List<Repository>> getRepositories(boolean includePrivate);
 
     @Override

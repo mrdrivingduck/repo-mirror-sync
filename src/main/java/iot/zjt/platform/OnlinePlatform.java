@@ -6,15 +6,16 @@ import iot.zjt.repo.Repository;
 import java.util.List;
 
 /**
- * Interface for online SCM system to implement.
+ * Interface for online version control system to implement.
  *
  * @author Mr Dk.
- * @since 2020/12/31
+ * @since 2021/01/01
  */
 public interface OnlinePlatform {
     Future<List<Repository>> getRepositories(boolean includePrivate);
     Future<Void> createRepository(Repository repo);
     Future<Void> deleteRepository(Repository repo);
+    Future<Void> updateRepository(Repository repo);
     String getPlatform();
     String getRepositoryHttpsUrl(Repository repo);
 }

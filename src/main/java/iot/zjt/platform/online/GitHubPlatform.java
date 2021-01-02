@@ -50,12 +50,8 @@ public class GitHubPlatform extends AbstractOnlinePlatform {
      */
     @Override
     public Future<Void> createRepository(Repository repo) {
-        logger.warn("Trying to create repository " + repo.getName() + " on " + getPlatform());
+        logger.warn("Trying to create repository [" + repo.getName() + "] on " + getPlatform());
         WebClient client = WebClient.create(getVertx());
-
-        MultiMap form = MultiMap.caseInsensitiveMultiMap();
-        form.set("name", repo.getName());
-        form.set("visibility", repo.getVisibilityPrivate() ? "private" : "public");
 
         return client
                 .postAbs("https://api.github.com/user/repos")
@@ -106,7 +102,7 @@ public class GitHubPlatform extends AbstractOnlinePlatform {
      */
     @Override
     public Future<Void> deleteRepository(Repository repo) {
-        logger.warn("Trying to delete repository on " + getPlatform());
+        logger.warn("Trying to delete repository [" + repo.getName() + "] on " + getPlatform());
 
         WebClient client = WebClient.create(getVertx());
 
@@ -125,7 +121,6 @@ public class GitHubPlatform extends AbstractOnlinePlatform {
                 })
                 .compose(response -> {
                     // network success, but the result is unknown.
-
                     String log = getPlatform() + " responses " + response.statusCode();
 
                     if (response.statusCode() == 204) {
@@ -136,6 +131,49 @@ public class GitHubPlatform extends AbstractOnlinePlatform {
                     }
 
                     logger.info("Successfully delete " + repo.getName() + " on " + getPlatform());
+                    return Future.succeededFuture();
+                });
+    }
+
+    @Override
+    public Future<Void> updateRepository(Repository repo) {
+        logger.warn("Trying to update repository [" + repo.getName() + "] on " + getPlatform());
+
+        WebClient client = WebClient.create(getVertx());
+
+        return client
+                .patchAbs("https://api.github.com/repos/" + repo.getOwner() + "/" + repo.getName())
+                .bearerTokenAuthentication(getUser().getToken())
+                .putHeader("accept", "application/vnd.github.v3+json")
+                .sendJsonObject(new JsonObject()
+                        .put("private", repo.getVisibilityPrivate())
+                )
+                .onFailure(err -> {
+                    // network failure.
+                    logger.error(new StringBuilder()
+                            .append(getPlatform())
+                            .append(" responses: ")
+                            .append(err.getMessage())
+                    );
+                })
+                .compose(response -> {
+                    // network success, but the result is unknown.
+                    JsonObject body = response.bodyAsJsonObject();
+                    if (body == null) {
+                        return Future.failedFuture(getPlatform() +
+                                "responses with empty response body.");
+                    }
+
+                    String log = getPlatform() + " responses " + response.statusCode();
+
+                    if (response.statusCode() == 200) {
+                        logger.info(log);
+                    } else {
+                        logger.error(log);
+                        return Future.failedFuture(log);
+                    }
+
+                    logger.info("Successfully update " + repo.getName() + " on " + getPlatform());
                     return Future.succeededFuture();
                 });
     }

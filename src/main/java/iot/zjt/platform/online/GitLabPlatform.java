@@ -47,17 +47,16 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
      */
     @Override
     public Future<Void> createRepository(Repository repo) {
-        logger.warn("Trying to create repository " + repo.getName() + " on " + getPlatform());
+        logger.warn("Trying to create repository [" + repo.getName() + "] on " + getPlatform());
         WebClient client = WebClient.create(getVertx());
-
-        MultiMap form = MultiMap.caseInsensitiveMultiMap();
-        form.set("name", repo.getName());
-        form.set("visibility", repo.getVisibilityPrivate() ? "private" : "public");
 
         return client
                 .postAbs("https://gitlab.com/api/v4/projects")
                 .bearerTokenAuthentication(getUser().getToken())
-                .sendForm(form)
+                .sendForm(MultiMap.caseInsensitiveMultiMap()
+                        .set("name", repo.getName())
+                        .set("visibility", repo.getVisibilityPrivate() ? "private" : "public")
+                )
                 .onFailure(err -> {
                     // network failure.
                     logger.error(new StringBuilder()
@@ -84,7 +83,7 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
                         return Future.failedFuture(log);
                     }
 
-                    logger.info("Successfully create " + repo.getName() + " on " + getPlatform());
+                    logger.info("Successfully create [" + repo.getName() + "] on " + getPlatform());
                     return Future.succeededFuture();
                 });
     }
@@ -99,11 +98,12 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
      */
     @Override
     public Future<Void> deleteRepository(Repository repo) {
-        logger.warn("Trying to delete repository on " + getPlatform());
+        logger.warn("Trying to delete repository [" + repo.getName() + "] on " + getPlatform());
         WebClient client = WebClient.create(getVertx());
 
         return client
-                .deleteAbs("https://gitlab.com/api/v4/projects/" + repo.getOwner() + "%2F" + repo.getName())
+                .deleteAbs("https://gitlab.com/api/v4/projects/" +
+                        repo.getOwner() + "%2F" + repo.getName())
                 .bearerTokenAuthentication(getUser().getToken())
                 .send()
                 .onFailure(err -> {
@@ -127,7 +127,52 @@ public class GitLabPlatform extends AbstractOnlinePlatform {
                         return Future.failedFuture(log);
                     }
 
-                    logger.info("Successfully delete " + repo.getName() + " on " + getPlatform());
+                    logger.info("Successfully delete [" + repo.getName() + "] on " + getPlatform());
+                    return Future.succeededFuture();
+                });
+    }
+
+    @Override
+    public Future<Void> updateRepository(Repository repo) {
+        logger.warn("Trying to update repository [" + repo.getName() + "] on " + getPlatform());
+        WebClient client = WebClient.create(getVertx());
+
+        MultiMap form = MultiMap.caseInsensitiveMultiMap();
+        form.set("visibility", repo.getVisibilityPrivate() ? "private" : "public");
+
+        return client
+                .putAbs("https://gitlab.com/api/v4/projects/" +
+                        repo.getOwner() + "%2F" + repo.getName())
+                .bearerTokenAuthentication(getUser().getToken())
+                .sendForm(MultiMap.caseInsensitiveMultiMap()
+                        .set("visibility", repo.getVisibilityPrivate() ? "private" : "public")
+                )
+                .onFailure(err -> {
+                    // network failure.
+                    logger.error(new StringBuilder()
+                            .append(getPlatform())
+                            .append(" responses: ")
+                            .append(err.getMessage())
+                    );
+                })
+                .compose(response -> {
+                    // network success, but the result is unknown.
+                    JsonObject body = response.bodyAsJsonObject();
+                    if (body == null) {
+                        return Future.failedFuture(getPlatform() +
+                                "responses with empty response body.");
+                    }
+
+                    String log = getPlatform() + " responses " + response.statusCode();
+
+                    if (response.statusCode() == 200) {
+                        logger.info(log);
+                    } else {
+                        logger.error(body.toString());
+                        return Future.failedFuture(log);
+                    }
+
+                    logger.info("Successfully update [" + repo.getName() + "] on " + getPlatform());
                     return Future.succeededFuture();
                 });
     }
