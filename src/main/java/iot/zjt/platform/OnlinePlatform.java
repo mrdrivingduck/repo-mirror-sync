@@ -1,7 +1,7 @@
 package iot.zjt.platform;
 
 import io.vertx.core.Future;
-import iot.zjt.repo.Repository;
+import iot.zjt.Repository;
 
 import java.util.List;
 

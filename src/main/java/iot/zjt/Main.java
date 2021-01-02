@@ -8,7 +8,6 @@ import io.vertx.core.json.JsonObject;
 import iot.zjt.platform.PlatformUser;
 import iot.zjt.platform.online.GitHubPlatform;
 import iot.zjt.platform.online.GitLabPlatform;
-import iot.zjt.repo.Repository;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;

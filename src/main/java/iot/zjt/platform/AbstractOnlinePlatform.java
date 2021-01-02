@@ -4,7 +4,7 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
-import iot.zjt.repo.Repository;
+import iot.zjt.Repository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.Git;
@@ -149,6 +149,7 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
                                 try {
                                     logger.warn("Cloning from: [" + from.getName() +
                                             "] on " + getPlatform());
+                                    // $ git clone --bare {from.git.url}
                                     Git.cloneRepository()
                                             .setCredentialsProvider(
                                                     new UsernamePasswordCredentialsProvider(
@@ -163,6 +164,7 @@ public abstract class AbstractOnlinePlatform implements OnlinePlatform {
 
                                     logger.warn("Pushing mirror to: [" + to.getName() +
                                             "] on " + targetPlatform.getPlatform());
+                                    // $ git push --mirror {to.git.url}
                                     Git.open(dir).push()
                                             .setCredentialsProvider(
                                                     new UsernamePasswordCredentialsProvider(

@@ -1,4 +1,4 @@
-package iot.zjt.repo;
+package iot.zjt;
 
 /**
  * The object to describe an online repository.
@@ -12,7 +12,8 @@ public class Repository {
     private boolean visibilityPrivate;
     private int id;
 
-    public Repository() {}
+    public Repository() {
+    }
 
     public Repository(Repository another) {
         this.owner = another.owner;
