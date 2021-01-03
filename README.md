@@ -12,9 +12,9 @@ Nanjing, Jiangsu, China
 
 ## About
 
-*Repository Mirror Synchronizer* helps you backup repositories from one hosting platform to another as a mirror, keeping your commit records, branches, tags **all the same**. Currently most of the hosting platforms have offered similar function **with charge**. This program tries to to the same thing with the help of **APIs provided by the platforms** and the mirroring ability provided by **Git**.
+*Repository Mirror Synchronizer* helps you backup repositories from one hosting platform to another as a mirror, keeping your commit records, branches and tags **all the same**. Currently most of the hosting platforms have offered similar function **with charge**. This program tries to to the same thing for free, with the help of **APIs provided by platforms** and mirroring ability provided by **Git**.
 
-To manipulate your repositories through APIs, you should get the **personal access tokens** from the corresponding platform. Specifically, the tokens should at least have the permission of **read / write repositories**.
+To manipulate your repositories through APIs, you should get **personal access tokens** from the corresponding platform. Specifically, the tokens should at least have the permission of **read / write repositories**.
 
 The program uses these libraries as main dependencies:
 
@@ -25,14 +25,14 @@ The program uses these libraries as main dependencies:
 
 More hosting platforms to be support:
 
-| Support Status |                        Platform Logo                         |                           Tokens                            |
-| :------------: | :----------------------------------------------------------: | :---------------------------------------------------------: |
-|       ✅        |   ![github](docs/github.png) [GitHub](https://github.com/)   |         [link](https://github.com/settings/tokens)          |
-|       ✅        |   ![gitlab](docs/gitlab.png) [GitLab](https://gitlab.com/)   | [link](https://gitlab.com/-/profile/personal_access_tokens) |
-|       ❌        | ![bitbucket](docs/bitbucket.png) [Bitbucket](https://bitbucket.org/) |                              🚧                              |
-|       ❌        |     ![gitee](docs/gitee.png) [Gitee](https://gitee.com/)     |                              🚧                              |
-|       ❌        |   ![coding](docs/coding.png) [Coding](https://coding.net/)   |                              🚧                              |
-|      ...       |                             ...                              |                             ...                             |
+| Support Status |          Platform Logo           |            Platform Link            |                           Tokens                            |
+| :------------: | :------------------------------: | :---------------------------------: | :---------------------------------------------------------: |
+|       ✅        |    ![github](docs/github.png)    |    [GitHub](https://github.com/)    |         [link](https://github.com/settings/tokens)          |
+|       ✅        |    ![gitlab](docs/gitlab.png)    |    [GitLab](https://gitlab.com/)    | [link](https://gitlab.com/-/profile/personal_access_tokens) |
+|       ❌        | ![bitbucket](docs/bitbucket.png) | [Bitbucket](https://bitbucket.org/) |                              🚧                              |
+|       ❌        |     ![gitee](docs/gitee.png)     |     [Gitee](https://gitee.com/)     |                              🚧                              |
+|       ❌        |    ![coding](docs/coding.png)    |    [Coding](https://coding.net/)    |                              🚧                              |
+|      ...       |               ...                |                 ...                 |                             ...                             |                            ...                             |
 
 To support a new platform, methods defined in [`OnlinePlatform`](src/main/java/iot/zjt/platform/OnlinePlatform.java) interface should be implemented: 
 
@@ -49,14 +49,14 @@ public interface OnlinePlatform {
 
 ## Usage
 
-For example, if you want to mirror your repositories from GitHub to GitLab, then you should first initialize two `PlatformUser` objects with your platform **username** and **token**:
+As an example, if you want to mirror your repositories from *GitHub* to *GitLab*, then you should first initialize two `PlatformUser` objects with your platform **username** and **token**:
 
 ```java
 PlatformUser githubUser = new PlatformUser("github.username", "github.token");
 PlatformUser gitlabUser = new PlatformUser("gitlab.username", "gitlab.token");
 ```
 
-Then, use the `PlatformUser` objects to initialize corresponding sub-class objects which extends from `AbstractOnlinePlatform`.
+Then, use `PlatformUser` objects to initialize corresponding sub-class objects which extends from `AbstractOnlinePlatform`.
 
 ```java
 Vertx vertx = Vertx.vertx();
